@@ -63,9 +63,9 @@ const Header = () => {
     }
   }
   return (
-    <div className='bg-black'>
-      <nav className=''>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3'>
+    <div className=''>
+      <nav className='fixed z-50 w-full bg-black opacity-90 '>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-2'>
           <div className='flex items-center justify-between h-16'>
             <div className='flex justify-between items-center w-full'>
               <div className='hidden md:block flex-shrink-0'>
@@ -102,7 +102,7 @@ const Header = () => {
                 )}
               </div>
             </div>
-            <div className='-mr-2 flex md:hidden'>
+            <div className='flex md:hidden'>
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 type='button'
@@ -162,12 +162,12 @@ const Header = () => {
             <div className='md:hidden' id='mobile-menu'>
               <div
                 ref={ref}
-                className='px-2 pt-2 pb-3 space-y-5  h-full max-h-full w-1/2 sm:px-3 absolute bg-black right-0 z-50'
+                className='px-2 pt-2 pb-3 sm:px-3 bg-black z-50 opacity-90'
               >
                 {pages.map((page) => (
                   <a
                     key={page.link}
-                    className='hover:bg-gray-700 text-white block px-3 py-2 rounded-md text-base font-medium text-right'
+                    className='hover:bg-gray-700 text-white block px-3 py-2 rounded-md text-base font-medium text-center'
                     href={`#${page.link}`}
                   >
                     {page.text}
@@ -176,14 +176,13 @@ const Header = () => {
 
                 {!account ? (
                   <button
-                    className='border-[#577a30] border-2 rounded-lg p-2 text-[#577a30] font-bold hover:bg-gray-700 hover:text-white float-right'
-                    onClick={handleConnect}
+                    className='border-[#577a30] border-2 rounded-lg p-2 text-[#577a30] font-bold hover:bg-gray-700 hover:text-white text-center w-full px-20 mb-3'                    onClick={handleConnect}
                   >
                     CONNECT WALLET
                   </button>
                 ) : (
                   <button
-                    className='border-[#577a30] border-2 rounded-lg p-2 text-[#577a30] font-bold hover:bg-gray-700 hover:text-white float-right'
+                    className='border-[#577a30] border-2 rounded-lg p-2 text-[#577a30] font-bold hover:bg-gray-700 hover:text-white float-right w-full mb-3'
                     onClick={() => deactivate()}
                   >
                     {shortenAddress(account)}
