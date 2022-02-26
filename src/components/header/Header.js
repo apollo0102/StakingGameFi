@@ -176,7 +176,8 @@ const Header = () => {
 
                 {!account ? (
                   <button
-                    className='border-[#577a30] border-2 rounded-lg p-2 text-[#577a30] font-bold hover:bg-gray-700 hover:text-white text-center w-full px-20 mb-3'                    onClick={handleConnect}
+                    className='border-[#577a30] border-2 rounded-lg p-2 text-[#577a30] font-bold hover:bg-gray-700 hover:text-white text-center w-full px-20 mb-3'
+                    onClick={handleConnect}
                   >
                     CONNECT WALLET
                   </button>
@@ -188,7 +189,6 @@ const Header = () => {
                     {shortenAddress(account)}
                   </button>
                 )}
-
               </div>
             </div>
           )}
