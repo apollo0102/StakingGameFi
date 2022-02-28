@@ -6,7 +6,7 @@ const Card = (props) => {
           <img
             alt='ecommerce'
             className='object-cover object-center w-full h-full block'
-            src={props.img}
+            src={props.item.link}
           />
         </a>
         <div className='mt-4'>
@@ -14,7 +14,7 @@ const Card = (props) => {
             Collection
           </h3>
           {/* <h2 className="text-gray-900 title-font text-lg font-medium">The Catalyzer</h2> */}
-          <p className=' text-white mt-10'>{props.id}</p>
+          <p className=' text-white mt-10'>{props.item.edition}</p>
           <div className='flex items-center justify-between gap-x-3 my-10'>
             <button className='w-full md:w-1/2  rounded border-[#0dba88] border-2 text-[#0dba88]  text-base bg-[#1c1b1b] p-2 hover:bg-gray-700  hover:text-white bg-gray--500 active:bg-gray-700 focus:outline-none focus:ring focus:ring-cyan-300 shadow-lg shadow-cyan-700/50'>
               UnStake

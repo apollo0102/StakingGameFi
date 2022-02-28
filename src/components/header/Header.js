@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useEthers, shortenAddress } from '@usedapp/core'
 // import { toast } from 'react-toastify'
 import WalletConnectProvider from '@walletconnect/web3-provider'
@@ -6,7 +6,11 @@ import Web3Modal from 'web3modal'
 import 'react-toastify/dist/ReactToastify.css'
 import { Transition } from '@headlessui/react'
 import { ReactComponent as IconLogo } from '../../assets/icons/Logo.svg'
+import { useMoralis, useMoralisWeb3Api } from 'react-moralis'
+import axios from 'axios'
+const { REACT_APP_CONTRACT_RINKBEY_ADDRESS } = process.env
 
+// import Moralis from 'Moralis';
 const pages = [
   {
     text: 'STAKE',
@@ -25,14 +29,14 @@ const pages = [
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { account, activate, deactivate } = useEthers()
-
+  const { Moralis, isInitialized, ...rest } = useMoralis()
+  const Web3Api = useMoralisWeb3Api()
   // Example for Polygon/Matic:
   // const customNetworkOptions = {
   //   rpcUrl: 'https://rpc-mumbai.maticvigil.com',
   //   chainId: 80001,
   //   currencySymbol:'Matic'
   // }
-
   const handleConnect = async () => {
     const providerOptions = {
       injected: {
@@ -57,8 +61,6 @@ const Header = () => {
         providerOptions,
       })
       const provider = await web3Modal.connect()
-      // const provider = new ethers.providers.Web3Provider(instance)
-      // const signer = provider.getSigner()
       await activate(provider)
     }
   }

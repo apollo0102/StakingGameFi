@@ -1,22 +1,22 @@
 import { ethers } from 'ethers';
 import { Contract } from '@ethersproject/contracts';
 import { useContractCall, useContractFunction } from '@usedapp/core';
-import PresaleContractABI from '../abi/PresaleContractABI.json';
-import { PresaleContractAddress } from '../contracts';
+import StakingContractABI from '../abi/StakingContractABI.json';
+import { ContractAddressByRinkeby } from '../contracts';
 
-const PresaleContractInterface = new ethers.utils.Interface(PresaleContractABI);
+const StakingContractInterface = new ethers.utils.Interface(StakingContractABI);
 
-const PresaleContract = new Contract(
-  PresaleContractAddress,
-  PresaleContractInterface
+const StakingContract = new Contract(
+  ContractAddressByRinkeby,
+  StakingContractInterface
 );
 
 export const useWhitelist = (address) => {
   const [whitelist] =
     useContractCall(
       address && {
-        abi: PresaleContractInterface,
-        address: PresaleContractAddress,
+        abi: StakingContractInterface,
+        address: ContractAddressByRinkeby,
         method: 'whitelist',
         args: [address],
       }
@@ -26,7 +26,7 @@ export const useWhitelist = (address) => {
 
 export const useMint = () => {
   const { state, send, event } = useContractFunction(
-    PDEFIREContract,
+    StakingContract,
     'mint',
     {}
   );
