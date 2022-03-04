@@ -143,7 +143,7 @@ const Home = () => {
       withDrawState.status === 'Exception' && toast.error('error',{position: toast.POSITION.TOP_RIGHT, autoClose:5000});
       setNFTList()
     }
-  }, [account, lockNFTList])
+  }, [account, lockNFTList ])
   // }, [account])
 
   return (
