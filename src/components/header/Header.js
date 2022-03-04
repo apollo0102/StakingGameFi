@@ -46,12 +46,12 @@ const Header = () => {
         },
         package: null,
       },
-      walletconnect: {
-        package: WalletConnectProvider,
-        options: {
-          infuraId: process.env.REACT_APP_INFURA_ID,
-        },
-      },
+      // walletconnect: {
+      //   package: WalletConnectProvider,
+      //   options: {
+      //     infuraId: process.env.REACT_APP_INFURA_ID,
+      //   },
+      // },
     }
 
     if (!account) {
@@ -71,11 +71,13 @@ const Header = () => {
           <div className='flex items-center justify-between h-16'>
             <div className='flex justify-between items-center w-full'>
               <div className='hidden md:block flex-shrink-0'>
-                <IconLogo></IconLogo>
+                <a href="https://journeytothemetaverse.net/">
+                  <img src="https://i0.wp.com/journeytothemetaverse.net/wp-content/uploads/2022/01/WhatsApp_Image_2022-01-28_at_18.23.15-removebg-preview.png" className='w-[80px] h-[60px]'></img>
+                </a>
               </div>
               <div className='hidden md:block'>
                 <div className='ml-10 flex items-baseline space-x-8'>
-                  {pages.map((page) => (
+                  {/* {pages.map((page) => (
                     <a
                       key={page.link}
                       className='text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium'
@@ -83,7 +85,7 @@ const Header = () => {
                     >
                       {page.text}
                     </a>
-                  ))}
+                  ))} */}
                 </div>
               </div>
               <div className='hidden md:block '>
@@ -166,7 +168,7 @@ const Header = () => {
                 ref={ref}
                 className='px-2 pt-2 pb-3 sm:px-3 bg-black z-50 opacity-90'
               >
-                {pages.map((page) => (
+                {/* {pages.map((page) => (
                   <a
                     key={page.link}
                     className='hover:bg-gray-700 text-white block px-3 py-2 rounded-md text-base font-medium text-center'
@@ -174,7 +176,7 @@ const Header = () => {
                   >
                     {page.text}
                   </a>
-                ))}
+                ))} */}
 
                 {!account ? (
                   <button

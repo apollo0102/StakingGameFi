@@ -40,3 +40,20 @@ export const useGetHardStakingTokens = (account) => {
   // }
   return value;
 };
+
+export const useGetTotalHardStakers = () => {
+  const { value, error } = useCall({
+    contract: new Contract(StakingContractAddress, StakingContractInterface),
+    method: 'totalHardStaker',
+    args: []
+  }) ?? {}
+  return value;
+};
+export const useGetTotalStakedNFTs = () => {
+  const { value, error } = useCall({
+    contract: new Contract(StakingContractAddress, StakingContractInterface),
+    method: 'totalStakedNFT',
+    args: []
+  }) ?? {}
+  return value;
+};

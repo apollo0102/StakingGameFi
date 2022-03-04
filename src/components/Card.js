@@ -49,10 +49,11 @@ const Card = (props) => {
           />
         </a>
         <div className='mt-4'>
-          <h3 className='text-gray-500 text-xs tracking-widest title-font mb-1'>
+          <h2 className='text-gray-500 tracking-widest title-font mb-1'>
             Journey to the metaverse
-          </h3>
-          {/* <h2 className="text-gray-900 title-font text-lg font-medium">The Catalyzer</h2> */}
+          </h2>
+          
+          <h3 className="text-white title-font text-lg font-medium">{props.item.type}</h3>
           <p className=' text-white mt-10'>{props.item.edition}</p>
           <div className='flex items-center justify-between gap-x-3 my-10'>
             <button className='w-full md:w-1/2  rounded border-[#0dba88] border-2 text-[#0dba88]  text-base bg-[#1c1b1b] p-2 hover:bg-gray-700  hover:text-white bg-gray--500 active:bg-gray-700 focus:outline-none focus:ring focus:ring-cyan-300 shadow-lg shadow-cyan-700/50'

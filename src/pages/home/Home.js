@@ -7,7 +7,7 @@ import React, {
 } from 'react'
 import { useBaseURI, useApprove } from '../../hooks/GameFiContract'
 import { useGetUserBalance, useWithdrawAURA } from '../../hooks/TokenContract'
-import { useGetHardStakingTokens } from '../../hooks/StakingContract'
+import { useGetHardStakingTokens, useGetTotalStakedNFTs, useGetTotalHardStakers } from '../../hooks/StakingContract'
 import { Dialog, Transition } from '@headlessui/react'
 import AppLayout from '../AppLayout'
 import { toast } from 'react-toastify'
@@ -23,34 +23,19 @@ import './Home.scss'
 import { data } from 'autoprefixer'
 import { Loading } from '../../components/Loading/Loading'
 
-const nftsList1 = [
-  {
-    description: '11111',
-    edition: 2,
-    image: '',
-    link: '',
-    id: 2,
-  },
-  {
-    description: '222222',
-    edition: 3,
-    image: '',
-    link: '',
-    id: 3,
-  },
-]
 const Home = () => {
   const [nftsList, setNftsList] = useState([])
   const [amount, setAmount] = useState([])
   let [jsonData, setJsonData] = useState([])
-  let [loadingFlag, setLoadingFlag] = useState([false])
-
+  let [loadingFlag, setLoadingFlag] = useState(false)
   const { account, activate, deactivate } = useEthers()
   const { Moralis, isInitialized, ...rest } = useMoralis()
   const Web3Api = useMoralisWeb3Api()
   const [open, setOpen] = useState(false)
   const cancelButtonRef = useRef(null)
   const lockNFTList = useGetHardStakingTokens(account);
+  const totalStackedNFT = useGetTotalStakedNFTs();
+  const totalHardStakers = useGetTotalHardStakers();
 
   const nfts = async () => {
     console.log(account)
@@ -102,58 +87,57 @@ const Home = () => {
         image: response.data.image,
         name: response.data.name,
         link: makeLinkURL(response.data.image),
+        type: ""
       }
     } catch (ex) {
       console.log(ex)
       return null
     }
   }
-  
-
-  
   const setNFTList = async () => {
-    //const nftList = await nfts()
+    const nftList = await nfts()
     let nsList = []
 
-    // console.log("baseURI:  ", baseURI);
-    // for(let nft of nftList.result) {
-    //   console.log("---->")
-    //   console.log(nft);
-    //   const json = await getJsonData(baseURI, nft.token_id)
-    //   console.log("json : ", json)
-    //   nsList.push(json)
-    // }
+    for(let nft of nftList.result) {
+      console.log("---->")
+      console.log(nft);
+      console.log("baseURI------->", baseURI)
+      const json = await getJsonData(baseURI[0], nft.token_id)
+      console.log("json : ", json)
+      json["type"] = "UnLocked NFT"
+      nsList.push(json)
+    }
     
-    //console.log('here: ', lockNFTList)
+    console.log('here: ', lockNFTList)
     const lockStakes = lockNFTList;
 
     if (!lockStakes)
-      return
-
+      return  
+      
     for(let nft of lockStakes) {
       for ( let item of nft) {
         const json = await getJsonData(baseURI[0], item)
+        json["type"] = "Locked NFT"
         nsList.push(json)
       }
     }
     setNftsList(nsList)
+    console.log(nsList)
   }
-  const { state: withDrawState, send: withdrawAURA, event: withDrawEvent } = useWithdrawAURA()
+
+  const { state: withDrawState, send: withdrawAURA} = useWithdrawAURA()
 
   const withDraw = async () => {
     await withdrawAURA(amount)
-    await withDrawEvent()
     setOpen(false)
   }
   
   const getUserBalance = useGetUserBalance(account)
   
   useEffect(() => {
-    console.log(baseURI);
-    (async() => {
-      if (account) {
-        console.log("account----> ", baseURI);
-        //await setNFTList()
+        if(account){
+          //setNFTList()
+        }
         
         // withDrawState.status === 'Exception' &&
         //   toast.error('hard_error', {
@@ -165,23 +149,29 @@ const Home = () => {
         //     position: toast.POSITION.TOP_RIGHT,
         //     autoClose: 5000,
         //   })
-      }
-    })()
-  // }, [account, lockNFTList])
   }, [account])
+  // }, [account])
+
+  if (loadingFlag) {
+    return <Loading />
+  }
 
   return (
     <AppLayout>
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 flex flex-col items-center justify-center gap-y-10'>
         <div className='py-10 text-center w-full flex flex-wrap  items-center justify-between  gap-y-2 '>
           <div className='basis-[100%]  md:basis-[48%] px-10  py-5 bg-gray-700 flex flex-col text-center gap-5 rounded-2xl  shadow-lg shadow-gray-700/50'>
-            <span className='text-[30px] font-semibold text-white'>5,780</span>
+            <span className='text-[30px] font-semibold text-white'>
+            {account ? parseInt(totalStackedNFT, 10).toString() : ""}
+            </span>
             <span className='font-normal text-white mb-5 text-[20px]'>
               Total Locked NFTs
             </span>
           </div>
           <div className='basis-[100%] md:basis-[48%] px-10 py-5 bg-gray-700 flex flex-col text-center gap-5 rounded-2xl  shadow-lg shadow-gray-700/50'>
-            <span className='text-[30px] font-semibold text-white'>2,678</span>
+            <span className='text-[30px] font-semibold text-white'>
+            {account ? parseInt(totalHardStakers, 10).toString() : ""}
+            </span>
             <span className='font-normal text-white mb-5 text-[20px]'>
               Number of Stakers
             </span>
@@ -194,7 +184,7 @@ const Home = () => {
             </li>
             <li className='text-[20px] font-bold text-white mb-5'>
               <span className='text-[32px]'>
-                {account ? parseInt(getUserBalance, 10).toString() : 0}
+                {account ? parseInt(getUserBalance, 10).toString() : ""}
               </span>
               <span className='ml-2'>AURA</span>
             </li>
@@ -204,12 +194,12 @@ const Home = () => {
         {nftsList && <CardList nfts={nftsList} />}
 
         <div className='pt-10 pb-20 text-center w-full flex flex-wrap  items-center justify-between gap-y-10'>
-          <button className='basis-[100%] md:basis-[48%] text-lg font-bold rounded-2xl  text-white py-5   hover:text-white hover:text-xl bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 focus:outline-none focus:ring focus:ring-cyan-300 shadow-lg shadow-cyan-700/50'>
+          {/* <button className='basis-[100%] md:basis-[48%] text-lg font-bold rounded-2xl  text-white py-5   hover:text-white hover:text-xl bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 focus:outline-none focus:ring focus:ring-cyan-300 shadow-lg shadow-cyan-700/50'>
             STAKE
-          </button>
+          </button> */}
           <button
-            className='basis-[100%] md:basis-[48%] text-lg font-bold rounded-2xl   text-white py-5  hover:text-xl bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-300 shadow-lg shadow-indigo-700/50'
-            onClick={() => account & setOpen(true)}
+            className='w-full text-lg font-bold rounded-2xl   text-white py-5  hover:text-xl bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-300 shadow-lg shadow-indigo-700/50'
+            onClick={() => account? setOpen(true): ""}
           >
             WITHDRAW
           </button>
@@ -262,16 +252,16 @@ const Home = () => {
                           Please set the amount of withdraw.
                         </Dialog.Title>
                         <div className='flex flex-col justify-center items-center'>
-                          <div className='mt-2'>
+                          <div className='mt-2 w-full'>
                             <input
-                              type='text'
+                              type='number'
                               value={amount}
                               onChange={(e) => setAmount(e.target.value)}
-                              className=' focus:ring-indigo-500 focus:border-indigo-500 block w-full mx-3 px-5  py-5 text-lg sm:text-sm border-gray-300 rounded-md'
-                              placeholder='Please set the amount of withdraw?'
+                              className=' focus:ring-indigo-50 block w-full border-2 border-gray-500 focus:border-gray-900  py-2 text-lg sm:text-sm rounded-md my-5'
+                              placeholder='Please set the amount of withdraw'
                             />
                           </div>
-                          <div className='mt-2'>
+                          <div className='mt-2 w-full'>
                             <p className='text-sm text-gray-500'>
                               Are you sure to confirm withDraw?
                             </p>
