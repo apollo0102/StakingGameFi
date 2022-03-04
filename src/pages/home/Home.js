@@ -3,43 +3,39 @@ import React, {
   useEffect,
   Fragment,
   useRef,
-  createContext,
 } from 'react'
-import { useBaseURI, useApprove } from '../../hooks/GameFiContract'
+import { useBaseURI } from '../../hooks/GameFiContract'
 import { useGetUserBalance, useWithdrawAURA } from '../../hooks/TokenContract'
-import { useGetHardStakingTokens, useGetTotalStakedNFTs, useGetTotalHardStakers } from '../../hooks/StakingContract'
+import {
+  useGetHardStakingTokens,
+  useGetTotalStakedNFTs,
+  useGetTotalHardStakers,
+} from '../../hooks/StakingContract'
 import { Dialog, Transition } from '@headlessui/react'
 import AppLayout from '../AppLayout'
 import { toast } from 'react-toastify'
 import CardList from './CardList'
-import { useEthers, shortenAddress } from '@usedapp/core'
+import { useEthers } from '@usedapp/core'
 import {
-  useMoralis,
   useMoralisWeb3Api,
-  useMoralisWeb3ApiCall,
 } from 'react-moralis'
 import axios from 'axios'
 import './Home.scss'
-import { data } from 'autoprefixer'
-import { Loading } from '../../components/Loading/Loading'
 
 const Home = () => {
   const [nftsList, setNftsList] = useState([])
   const [amount, setAmount] = useState([])
-  let [jsonData, setJsonData] = useState([])
-  let [loadingFlag, setLoadingFlag] = useState(false)
-  const { account, activate, deactivate } = useEthers()
-  const { Moralis, isInitialized, ...rest } = useMoralis()
+  const { account } = useEthers()
   const Web3Api = useMoralisWeb3Api()
   const [open, setOpen] = useState(false)
   const cancelButtonRef = useRef(null)
-  const lockNFTList = useGetHardStakingTokens(account);
-  const totalStackedNFT = useGetTotalStakedNFTs();
-  const totalHardStakers = useGetTotalHardStakers();
+  const lockNFTList = useGetHardStakingTokens(account)
+  const totalStackedNFT = useGetTotalStakedNFTs()
+  const totalHardStakers = useGetTotalHardStakers()
 
   const nfts = async () => {
-    console.log(account)
-    console.log(process.env.REACT_APP_CONTRACT_RINKBEY_ADDRESS)
+    //console.log(account)
+    //console.log(process.env.REACT_APP_CONTRACT_RINKBEY_ADDRESS)
     const result = await Web3Api.account.getNFTsForContract({
       chain: 'rinkeby',
       address: account,
@@ -87,10 +83,10 @@ const Home = () => {
         image: response.data.image,
         name: response.data.name,
         link: makeLinkURL(response.data.image),
-        type: ""
+        type: '',
       }
     } catch (ex) {
-      console.log(ex)
+      //console.log(ex)
       return null
     }
   }
@@ -98,63 +94,57 @@ const Home = () => {
     const nftList = await nfts()
     let nsList = []
 
-    for(let nft of nftList.result) {
-      console.log("---->")
-      console.log(nft);
-      console.log("baseURI------->", baseURI)
-      const json = await getJsonData(baseURI[0], nft.token_id)
-      console.log("json : ", json)
-      json["type"] = "UnLocked NFT"
-      nsList.push(json)
-    }
-    
-    console.log('here: ', lockNFTList)
-    const lockStakes = lockNFTList;
+    for (let nft of nftList.result) {
+      //console.log('---->')
+      //console.log(nft)
+      //console.log('baseURI------->', baseURI)
 
-    if (!lockStakes)
-      return  
-      
-    for(let nft of lockStakes) {
-      for ( let item of nft) {
+      if (baseURI) {
+        const json = await getJsonData(baseURI[0], nft.token_id)
+        //console.log('json : ', json)
+        json['type'] = 'UnLocked NFT'
+        nsList.push(json)
+      }
+    }
+
+    //console.log('here: ', lockNFTList)
+    const lockStakes = lockNFTList
+
+    if (!lockStakes) return
+
+    for (let nft of lockStakes) {
+      for (let item of nft) {
         const json = await getJsonData(baseURI[0], item)
-        json["type"] = "Locked NFT"
+        json['type'] = 'Locked NFT'
         nsList.push(json)
       }
     }
     setNftsList(nsList)
-    console.log(nsList)
+    //console.log(nsList)
   }
 
-  const { state: withDrawState, send: withdrawAURA} = useWithdrawAURA()
+  const { state: withDrawState, send: withdrawAURA } = useWithdrawAURA()
 
   const withDraw = async () => {
-    await withdrawAURA(amount)
     setOpen(false)
-  }
-  
-  const getUserBalance = useGetUserBalance(account)
-  
-  useEffect(() => {
-        if(account){
-          //setNFTList()
-        }
-        
-        // withDrawState.status === 'Exception' &&
-        //   toast.error('hard_error', {
-        //     position: toast.POSITION.TOP_RIGHT,
-        //     autoClose: 5000,
-        //   })
-        // withDrawState.status === 'Success' &&
-        //   toast.success('successful', {
-        //     position: toast.POSITION.TOP_RIGHT,
-        //     autoClose: 5000,
-        //   })
-  }, [account])
-  // }, [account])
+    setAmount(0)
+    await withdrawAURA(amount)
+    toast.success('success', {
+      position: toast.POSITION.TOP_RIGHT,
+      autoClose: 2000,
+    })
 
-  if (loadingFlag) {
-    return <Loading />
   }
+
+  const getUserBalance = useGetUserBalance(account)
+
+  useEffect(() => {
+    if (account) {
+      withDrawState.status === 'Exception' && toast.error('error',{position: toast.POSITION.TOP_RIGHT, autoClose:5000});
+      setNFTList()
+    }
+  }, [account, lockNFTList])
+  // }, [account])
 
   return (
     <AppLayout>
@@ -162,7 +152,7 @@ const Home = () => {
         <div className='py-10 text-center w-full flex flex-wrap  items-center justify-between  gap-y-2 '>
           <div className='basis-[100%]  md:basis-[48%] px-10  py-5 bg-gray-700 flex flex-col text-center gap-5 rounded-2xl  shadow-lg shadow-gray-700/50'>
             <span className='text-[30px] font-semibold text-white'>
-            {account ? parseInt(totalStackedNFT, 10).toString() : ""}
+              {account ? parseInt(totalStackedNFT, 10).toString() : ''}
             </span>
             <span className='font-normal text-white mb-5 text-[20px]'>
               Total Locked NFTs
@@ -170,7 +160,7 @@ const Home = () => {
           </div>
           <div className='basis-[100%] md:basis-[48%] px-10 py-5 bg-gray-700 flex flex-col text-center gap-5 rounded-2xl  shadow-lg shadow-gray-700/50'>
             <span className='text-[30px] font-semibold text-white'>
-            {account ? parseInt(totalHardStakers, 10).toString() : ""}
+              {account ? parseInt(totalHardStakers, 10).toString() : ''}
             </span>
             <span className='font-normal text-white mb-5 text-[20px]'>
               Number of Stakers
@@ -184,13 +174,12 @@ const Home = () => {
             </li>
             <li className='text-[20px] font-bold text-white mb-5'>
               <span className='text-[32px]'>
-                {account ? parseInt(getUserBalance, 10).toString() : ""}
+                {account ? parseInt(getUserBalance, 10).toString() : ''}
               </span>
               <span className='ml-2'>AURA</span>
             </li>
           </ul>
         </div>
-        {/* {nftsList && <CardList nfts={nftsList} />} */}
         {nftsList && <CardList nfts={nftsList} />}
 
         <div className='pt-10 pb-20 text-center w-full flex flex-wrap  items-center justify-between gap-y-10'>
@@ -199,7 +188,7 @@ const Home = () => {
           </button> */}
           <button
             className='w-full text-lg font-bold rounded-2xl   text-white py-5  hover:text-xl bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-300 shadow-lg shadow-indigo-700/50'
-            onClick={() => account? setOpen(true): ""}
+            onClick={() => (account ? setOpen(true) : '')}
           >
             WITHDRAW
           </button>
@@ -225,7 +214,6 @@ const Home = () => {
                 <Dialog.Overlay className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity' />
               </Transition.Child>
 
-              {/* This element is to trick the browser into centering the modal contents. */}
               <span
                 className='hidden sm:inline-block sm:align-middle sm:h-screen'
                 aria-hidden='true'
@@ -281,7 +269,7 @@ const Home = () => {
                     <button
                       type='button'
                       className='mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
-                      onClick={() => setOpen(false)}
+                      onClick={() => setOpen(false) && setAmount(0)}
                       ref={cancelButtonRef}
                     >
                       Cancel

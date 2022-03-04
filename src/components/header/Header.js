@@ -1,42 +1,27 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useEthers, shortenAddress } from '@usedapp/core'
 // import { toast } from 'react-toastify'
-import WalletConnectProvider from '@walletconnect/web3-provider'
 import Web3Modal from 'web3modal'
 import 'react-toastify/dist/ReactToastify.css'
 import { Transition } from '@headlessui/react'
-import { ReactComponent as IconLogo } from '../../assets/icons/Logo.svg'
-import { useMoralis, useMoralisWeb3Api } from 'react-moralis'
-import axios from 'axios'
-const { REACT_APP_CONTRACT_RINKBEY_ADDRESS } = process.env
-
-// import Moralis from 'Moralis';
-const pages = [
-  {
-    text: 'STAKE',
-    link: '/stake',
-  },
-  {
-    text: 'LOCKED-STAKE',
-    link: '/locked',
-  },
-  {
-    text: 'WITHDRAW',
-    link: '/withdraw',
-  },
-]
+// const pages = [
+//   {
+//     text: 'STAKE',
+//     link: '/stake',
+//   },
+//   {
+//     text: 'LOCKED-STAKE',
+//     link: '/locked',
+//   },
+//   {
+//     text: 'WITHDRAW',
+//     link: '/withdraw',
+//   },
+// ]
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { account, activate, deactivate } = useEthers()
-  const { Moralis, isInitialized, ...rest } = useMoralis()
-  const Web3Api = useMoralisWeb3Api()
-  // Example for Polygon/Matic:
-  // const customNetworkOptions = {
-  //   rpcUrl: 'https://rpc-mumbai.maticvigil.com',
-  //   chainId: 80001,
-  //   currencySymbol:'Matic'
-  // }
   const handleConnect = async () => {
     const providerOptions = {
       injected: {
@@ -46,12 +31,6 @@ const Header = () => {
         },
         package: null,
       },
-      // walletconnect: {
-      //   package: WalletConnectProvider,
-      //   options: {
-      //     infuraId: process.env.REACT_APP_INFURA_ID,
-      //   },
-      // },
     }
 
     if (!account) {
@@ -72,7 +51,7 @@ const Header = () => {
             <div className='flex justify-between items-center w-full'>
               <div className='hidden md:block flex-shrink-0'>
                 <a href="https://journeytothemetaverse.net/">
-                  <img src="https://i0.wp.com/journeytothemetaverse.net/wp-content/uploads/2022/01/WhatsApp_Image_2022-01-28_at_18.23.15-removebg-preview.png" className='w-[80px] h-[60px]'></img>
+                  <img src="https://i0.wp.com/journeytothemetaverse.net/wp-content/uploads/2022/01/WhatsApp_Image_2022-01-28_at_18.23.15-removebg-preview.png" className='w-[80px] h-[60px]' alt="logo"></img>
                 </a>
               </div>
               <div className='hidden md:block'>

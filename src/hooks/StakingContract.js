@@ -35,9 +35,9 @@ export const useGetHardStakingTokens = (account) => {
     method: 'getHardStakingTokens',
     args: [account]
   }) ?? {}
-  // if(error) {
-  //   return undefined
-  // }
+  if(error) {
+    return undefined
+  }
   return value;
 };
 
@@ -47,6 +47,9 @@ export const useGetTotalHardStakers = () => {
     method: 'totalHardStaker',
     args: []
   }) ?? {}
+  if(error) {
+    return undefined
+  }
   return value;
 };
 export const useGetTotalStakedNFTs = () => {
@@ -55,5 +58,8 @@ export const useGetTotalStakedNFTs = () => {
     method: 'totalStakedNFT',
     args: []
   }) ?? {}
+  if(error) {
+    return undefined
+  }
   return value;
 };
