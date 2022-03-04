@@ -1,6 +1,16 @@
-import { BaseURI } from '../../hooks/GameFiContract'
-import React, { useState, useEffect } from 'react'
+import React, {
+  useState,
+  useEffect,
+  Fragment,
+  useRef,
+  createContext,
+} from 'react'
+import { useBaseURI, useApprove } from '../../hooks/GameFiContract'
+import { useGetUserBalance, useWithdrawAURA } from '../../hooks/TokenContract'
+import { useGetHardStakingTokens } from '../../hooks/StakingContract'
+import { Dialog, Transition } from '@headlessui/react'
 import AppLayout from '../AppLayout'
+import { toast } from 'react-toastify'
 import CardList from './CardList'
 import { useEthers, shortenAddress } from '@usedapp/core'
 import {
@@ -11,46 +21,36 @@ import {
 import axios from 'axios'
 import './Home.scss'
 import { data } from 'autoprefixer'
+import { Loading } from '../../components/Loading/Loading'
 
 const nftsList1 = [
   {
-    id: '#3978',
-    link: 'https://ipfs.io/ipfs/Qmdhq43NUrCqgs9hHa8MuKToCKPetXk5N9dqjHvdGyUuw4',
-    img: 'https://i0.wp.com/journeytothemetaverse.net/wp-content/uploads/2022/02/sneakPeek.02.gif?fit=640%2C640&ssl=1',
-    type: 0,
+    description: '11111',
+    edition: 2,
+    image: '',
+    link: '',
+    id: 2,
   },
   {
-    id: '#1806',
-    link: 'https://ipfs.io/ipfs/Qmdhq43NUrCqgs9hHa8MuKToCKPetXk5N9dqjHvdGyUuw4',
-    img: 'https://ipfs.io/ipfs/Qmdhq43NUrCqgs9hHa8MuKToCKPetXk5N9dqjHvdGyUuw4',
-    type: 0,
-  },
-  {
-    id: '#7349',
-    link: 'https://ipfs.io/ipfs/Qmdhq43NUrCqgs9hHa8MuKToCKPetXk5N9dqjHvdGyUuw4',
-    img: 'https://ipfs.io/ipfs/Qmdhq43NUrCqgs9hHa8MuKToCKPetXk5N9dqjHvdGyUuw4',
-    type: 0,
-  },
-  {
-    id: '#2567',
-    link: 'https://ipfs.io/ipfs/Qmdhq43NUrCqgs9hHa8MuKToCKPetXk5N9dqjHvdGyUuw4',
-    img: 'https://ipfs.io/ipfs/Qmdhq43NUrCqgs9hHa8MuKToCKPetXk5N9dqjHvdGyUuw4',
-    type: 1,
-  },
-  {
-    id: '#1180',
-    link: 'https://ipfs.io/ipfs/Qmdhq43NUrCqgs9hHa8MuKToCKPetXk5N9dqjHvdGyUuw4',
-    img: 'https://ipfs.io/ipfs/Qmdhq43NUrCqgs9hHa8MuKToCKPetXk5N9dqjHvdGyUuw4',
-    type: 1,
+    description: '222222',
+    edition: 3,
+    image: '',
+    link: '',
+    id: 3,
   },
 ]
-
 const Home = () => {
   const [nftsList, setNftsList] = useState([])
+  const [amount, setAmount] = useState([])
   let [jsonData, setJsonData] = useState([])
+  let [loadingFlag, setLoadingFlag] = useState([false])
+
   const { account, activate, deactivate } = useEthers()
   const { Moralis, isInitialized, ...rest } = useMoralis()
   const Web3Api = useMoralisWeb3Api()
+  const [open, setOpen] = useState(false)
+  const cancelButtonRef = useRef(null)
+  const lockNFTList = useGetHardStakingTokens(account);
 
   const nfts = async () => {
     console.log(account)
@@ -88,11 +88,11 @@ const Home = () => {
     }
   }
 
-  const baseURI = BaseURI()
-  const getJsonData = async(url, index) => {
+  const baseURI = useBaseURI()
+
+  const getJsonData = async (url, index) => {
     try {
-      const response = await axios
-      .get(fixURL(url) + index + '.json');
+      const response = await axios.get(fixURL(url) + index + '.json')
       return {
         attributes: response.data.attributes,
         dna: response.data.dna,
@@ -102,31 +102,74 @@ const Home = () => {
         image: response.data.image,
         name: response.data.name,
         link: makeLinkURL(response.data.image),
-      };
+      }
     } catch (ex) {
-      console.log(ex);
-      return null;
+      console.log(ex)
+      return null
     }
   }
+  
+
+  
   const setNFTList = async () => {
-    const nftList = await nfts()
-    var nsList = []
-    nftList.result.forEach(async (nft) => {
-      console.log('jsonData')
-      const json = await getJsonData(baseURI[0], nft.token_id)
-      nsList.push(json)
-    })
-    console.log('---------------nftMetadata---------->')
-    console.log(nsList)
+    //const nftList = await nfts()
+    let nsList = []
+
+    // console.log("baseURI:  ", baseURI);
+    // for(let nft of nftList.result) {
+    //   console.log("---->")
+    //   console.log(nft);
+    //   const json = await getJsonData(baseURI, nft.token_id)
+    //   console.log("json : ", json)
+    //   nsList.push(json)
+    // }
+    
+    //console.log('here: ', lockNFTList)
+    const lockStakes = lockNFTList;
+
+    if (!lockStakes)
+      return
+
+    for(let nft of lockStakes) {
+      for ( let item of nft) {
+        const json = await getJsonData(baseURI[0], item)
+        nsList.push(json)
+      }
+    }
     setNftsList(nsList)
   }
+  const { state: withDrawState, send: withdrawAURA, event: withDrawEvent } = useWithdrawAURA()
+
+  const withDraw = async () => {
+    await withdrawAURA(amount)
+    await withDrawEvent()
+    setOpen(false)
+  }
+  
+  const getUserBalance = useGetUserBalance(account)
+  
   useEffect(() => {
-    if (account) {
-      setNFTList()
-    }
+    console.log(baseURI);
+    (async() => {
+      if (account) {
+        console.log("account----> ", baseURI);
+        //await setNFTList()
+        
+        // withDrawState.status === 'Exception' &&
+        //   toast.error('hard_error', {
+        //     position: toast.POSITION.TOP_RIGHT,
+        //     autoClose: 5000,
+        //   })
+        // withDrawState.status === 'Success' &&
+        //   toast.success('successful', {
+        //     position: toast.POSITION.TOP_RIGHT,
+        //     autoClose: 5000,
+        //   })
+      }
+    })()
+  // }, [account, lockNFTList])
   }, [account])
 
-  // const name = useName()
   return (
     <AppLayout>
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 flex flex-col items-center justify-center gap-y-10'>
@@ -150,21 +193,115 @@ const Home = () => {
               Your Rewards
             </li>
             <li className='text-[20px] font-bold text-white mb-5'>
-              <span className='text-[32px]'>50</span>
-              <span className='ml-2'>tokens</span>
+              <span className='text-[32px]'>
+                {account ? parseInt(getUserBalance, 10).toString() : 0}
+              </span>
+              <span className='ml-2'>AURA</span>
             </li>
           </ul>
         </div>
+        {/* {nftsList && <CardList nfts={nftsList} />} */}
         {nftsList && <CardList nfts={nftsList} />}
 
         <div className='pt-10 pb-20 text-center w-full flex flex-wrap  items-center justify-between gap-y-10'>
           <button className='basis-[100%] md:basis-[48%] text-lg font-bold rounded-2xl  text-white py-5   hover:text-white hover:text-xl bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 focus:outline-none focus:ring focus:ring-cyan-300 shadow-lg shadow-cyan-700/50'>
             STAKE
           </button>
-          <button className='basis-[100%] md:basis-[48%] text-lg font-bold rounded-2xl   text-white py-5  hover:text-xl bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-300 shadow-lg shadow-indigo-700/50'>
+          <button
+            className='basis-[100%] md:basis-[48%] text-lg font-bold rounded-2xl   text-white py-5  hover:text-xl bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-300 shadow-lg shadow-indigo-700/50'
+            onClick={() => account & setOpen(true)}
+          >
             WITHDRAW
           </button>
         </div>
+
+        <Transition.Root show={open} as={Fragment}>
+          <Dialog
+            as='div'
+            className='fixed z-10 inset-0 overflow-y-auto'
+            initialFocus={cancelButtonRef}
+            onClose={setOpen}
+          >
+            <div className='flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
+              <Transition.Child
+                as={Fragment}
+                enter='ease-out duration-300'
+                enterFrom='opacity-0'
+                enterTo='opacity-100'
+                leave='ease-in duration-200'
+                leaveFrom='opacity-100'
+                leaveTo='opacity-0'
+              >
+                <Dialog.Overlay className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity' />
+              </Transition.Child>
+
+              {/* This element is to trick the browser into centering the modal contents. */}
+              <span
+                className='hidden sm:inline-block sm:align-middle sm:h-screen'
+                aria-hidden='true'
+              >
+                &#8203;
+              </span>
+              <Transition.Child
+                as={Fragment}
+                enter='ease-out duration-300'
+                enterFrom='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
+                enterTo='opacity-100 translate-y-0 sm:scale-100'
+                leave='ease-in duration-200'
+                leaveFrom='opacity-100 translate-y-0 sm:scale-100'
+                leaveTo='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
+              >
+                <div className='inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full'>
+                  <div className='bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4'>
+                    <div className='sm:flex sm:items-start'>
+                      <div className='mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left'>
+                        <Dialog.Title
+                          as='h3'
+                          className='text-lg leading-6 font-medium text-gray-900'
+                        >
+                          Please set the amount of withdraw.
+                        </Dialog.Title>
+                        <div className='flex flex-col justify-center items-center'>
+                          <div className='mt-2'>
+                            <input
+                              type='text'
+                              value={amount}
+                              onChange={(e) => setAmount(e.target.value)}
+                              className=' focus:ring-indigo-500 focus:border-indigo-500 block w-full mx-3 px-5  py-5 text-lg sm:text-sm border-gray-300 rounded-md'
+                              placeholder='Please set the amount of withdraw?'
+                            />
+                          </div>
+                          <div className='mt-2'>
+                            <p className='text-sm text-gray-500'>
+                              Are you sure to confirm withDraw?
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className='bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse'>
+                    <button
+                      type='button'
+                      className='w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-cyan-600 text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 sm:ml-3 sm:w-auto sm:text-sm'
+                      onClick={withDraw}
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      type='button'
+                      className='mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
+                      onClick={() => setOpen(false)}
+                      ref={cancelButtonRef}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </Transition.Child>
+            </div>
+          </Dialog>
+        </Transition.Root>
       </main>
     </AppLayout>
   )

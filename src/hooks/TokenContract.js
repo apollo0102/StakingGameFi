@@ -1,33 +1,41 @@
 import { ethers } from 'ethers';
 import { Contract } from '@ethersproject/contracts';
-import { useContractCall, useContractFunction } from '@usedapp/core';
-import StakingContractABI from '../abi/StakingContractABI.json';
-import { ContractAddressByRinkeby } from '../contracts';
+import { useCall, useContractFunction } from '@usedapp/core';
+import TokenContractABI from '../abi/TokenContractABI.json';
+import { TokenContractAddress } from '../contracts';
 
-const StakingContractInterface = new ethers.utils.Interface(StakingContractABI);
+const TokenContractInterface = new ethers.utils.Interface(TokenContractABI);
 
-const StakingContract = new Contract(
-  ContractAddressByRinkeby,
-  StakingContractInterface
+const TokenContract = new Contract(
+  TokenContractAddress,
+  TokenContractInterface
 );
 
-export const useWhitelist = (address) => {
-  const [whitelist] =
-    useContractCall(
-      address && {
-        abi: StakingContractInterface,
-        address: ContractAddressByRinkeby,
-        method: 'whitelist',
-        args: [address],
-      }
-    ) ?? [];
-  return whitelist;
+export const useGetUserBalance = (account) => {
+  const { value, error } = useCall(account && {
+    contract: new Contract(TokenContractAddress, TokenContractInterface),
+    method: 'getUserBalance',
+    args: [account]
+  }) ?? {}
+  if(error) {
+    return undefined
+  }
+  return value;
 };
 
-export const useMint = () => {
+export const useWithdrawAURA = () => {
   const { state, send, event } = useContractFunction(
-    StakingContract,
-    'mint',
+    TokenContract,
+    'withdrawAURA',
+    {}
+  );
+  return { state, send, event };
+};
+
+export const useApprove  = () => {
+  const { state, send, event } = useContractFunction(
+    TokenContract,
+    'approve',
     {}
   );
   return { state, send, event };

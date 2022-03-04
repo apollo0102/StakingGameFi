@@ -11,24 +11,23 @@ const GameFiContract = new Contract(
   GameFiContractABIInterface
 );
 
-export const BaseURI = () => {
+export const useBaseURI = () => {
   const { value, error } = useCall(ContractAddressByRinkeby && {
     contract: new Contract(ContractAddressByRinkeby, GameFiContractABIInterface),
     method: 'baseURI',
     args: []
   }) ?? {}
   if(error) {
-    console.error(error.message)
     return undefined
   }
   return value;
 };
 
-// export const useMint = () => {
-//   const { state, send, event } = useContractFunction(
-//     StakingContract,
-//     'mint',
-//     {}
-//   );
-//   return { state, send, event };
-// };
+export const useApprove  = () => {
+  const { state, send, event } = useContractFunction(
+    GameFiContract,
+    'approve',
+    {}
+  );
+  return { state, send, event };
+};
