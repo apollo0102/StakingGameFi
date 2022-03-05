@@ -147,7 +147,7 @@ const Home = () => {
   // }, [account])
 
   return (
-    <AppLayout>
+    <AppLayout className="">
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 flex flex-col items-center justify-center gap-y-10'>
         <div className='py-10 text-center w-full flex flex-wrap  items-center justify-between  gap-y-2 '>
           <div className='basis-[100%]  md:basis-[48%] px-10  py-5 bg-gray-700 flex flex-col text-center gap-5 rounded-2xl  shadow-lg shadow-gray-700/50'>

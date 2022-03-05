@@ -7,6 +7,9 @@ module.exports = {
     fontFamily: {
       'sans': ['"Bowlby One"', '"Sans-serif"'],
     },
+    backgroundImage: {
+      'backImg': "url('assets/images/backImg.gif')",
+    }
   },
   plugins: [],
 }
