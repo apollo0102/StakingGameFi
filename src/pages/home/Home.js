@@ -21,6 +21,8 @@ import {
 } from 'react-moralis'
 import axios from 'axios'
 import './Home.scss'
+import { StakingContractAddress, ContractAddressByRinkeby, TokenContractAddress } from '../../contracts';
+import { Loading } from '../../components/Loading/Loading';
 
 const Home = () => {
   const [nftsList, setNftsList] = useState([])
@@ -32,15 +34,17 @@ const Home = () => {
   const lockNFTList = useGetHardStakingTokens(account)
   const totalStackedNFT = useGetTotalStakedNFTs()
   const totalHardStakers = useGetTotalHardStakers()
+  const [loadingFlag, setLoadingFlag] = useState(false)
 
   const nfts = async () => {
-    //console.log(account)
-    //console.log(process.env.REACT_APP_CONTRACT_RINKBEY_ADDRESS)
+    console.log(account)
+    console.log(ContractAddressByRinkeby)
     const result = await Web3Api.account.getNFTsForContract({
-      chain: 'rinkeby',
+      chain: 'ropsten',
       address: account,
-      token_address: process.env.REACT_APP_CONTRACT_RINKBEY_ADDRESS,
+      token_address: ContractAddressByRinkeby,
     })
+    console.log("result-->", result);
     return result
   }
 
@@ -51,7 +55,7 @@ const Home = () => {
         url
           .split('ipfs://')
           .slice(-1)[0]
-          .substring(0, url.split('ipfs://').slice(-1)[0].length - 1)
+          // .substring(0, url.split('ipfs://').slice(-1)[0].length - 1)
       )
     } else {
       return url + '?format=json'
@@ -93,21 +97,21 @@ const Home = () => {
   const setNFTList = async () => {
     const nftList = await nfts()
     let nsList = []
-
+    setNftsList([]);
     for (let nft of nftList.result) {
-      //console.log('---->')
-      //console.log(nft)
-      //console.log('baseURI------->', baseURI)
+      console.log('---->')
+      console.log(nft)
+      console.log('baseURI------->', baseURI)
 
       if (baseURI) {
         const json = await getJsonData(baseURI[0], nft.token_id)
-        //console.log('json : ', json)
+        console.log('json : ', json)
         json['type'] = 'UnLocked NFT'
         nsList.push(json)
       }
     }
 
-    //console.log('here: ', lockNFTList)
+    console.log('here: ', lockNFTList)
     const lockStakes = lockNFTList
 
     if (!lockStakes) return
@@ -120,19 +124,31 @@ const Home = () => {
       }
     }
     setNftsList(nsList)
-    //console.log(nsList)
+    console.log(nsList)
   }
 
   const { state: withDrawState, send: withdrawAURA } = useWithdrawAURA()
 
   const withDraw = async () => {
-    setOpen(false)
-    setAmount(0)
-    await withdrawAURA(amount)
-    toast.success('success', {
-      position: toast.POSITION.TOP_RIGHT,
-      autoClose: 2000,
-    })
+    
+    try{
+      setLoadingFlag(true);
+      setOpen(false)
+      setAmount(0)
+      await withdrawAURA(amount)
+      setLoadingFlag(false);
+      toast.success('success', {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 2000,
+      })
+    }catch(e){
+      setLoadingFlag(false);
+      toast.error('error', {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 2000,
+      })
+
+    }
 
   }
 
@@ -145,6 +161,10 @@ const Home = () => {
     }
   }, [account, lockNFTList ])
   // }, [account])
+
+  if (loadingFlag) {
+    return <Loading />
+  }
 
   return (
     <AppLayout className="">

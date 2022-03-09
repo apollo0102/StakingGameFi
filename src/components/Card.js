@@ -1,34 +1,50 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { toast } from 'react-toastify'
 import { useEthers } from '@usedapp/core'
 import { useHardStake, useUnHardStake } from '../hooks/StakingContract'
 import { useApprove } from '../hooks/GameFiContract'
 import { StakingContractAddress } from '../contracts';
-import { Loading } from './Loading/Loading'
-
 
 const Card = (props) => {
   const { account } = useEthers()
   const {state: hardState, send: hardStake} = useHardStake();
   const {state: unHardState, send: unHardStake} = useUnHardStake();
   const { state: approveState, send: approveSend } = useApprove()
-  const [loadingFlag, setLoadingFlag] = useState(false)
+  
+  const {loadingFlag, setLoadingFlag} = props
+
   const hardStaking = async (tokenId) =>{
-    setLoadingFlag(true);
-    account && await approveSend(StakingContractAddress, tokenId)
-    account && await hardStake(tokenId)
-    toast.success('successful',{position: toast.POSITION.TOP_RIGHT, autoClose:5000});
-    setLoadingFlag(false);
+    try {
+      setLoadingFlag(true);
+      account && await approveSend(StakingContractAddress, tokenId)
+      console.log("approveSend");
+      setLoadingFlag(true);
+      account && await hardStake(tokenId)
+      console.log("hardStake");
+      toast.success('successful',{position: toast.POSITION.TOP_RIGHT, autoClose:5000});
+      setLoadingFlag(false);
+    } catch {
+      toast.error('error',{position: toast.POSITION.TOP_RIGHT, autoClose:5000});
+      setLoadingFlag(false);
+    }
+    
   }
   const  unHardStaking = async(tokenId) =>{
-    setLoadingFlag(true);
-    account && await unHardStake(tokenId)
-    toast.success('successful',{position: toast.POSITION.TOP_RIGHT, autoClose:5000});
-    setLoadingFlag(true);
+    try{
+      setLoadingFlag(true);
+      account && await unHardStake(tokenId)
+      toast.success('successful',{position: toast.POSITION.TOP_RIGHT, autoClose:5000});
+      setLoadingFlag(false);
+    } catch(e){
+      toast.error('error',{position: toast.POSITION.TOP_RIGHT, autoClose:5000});
+      setLoadingFlag(false);
+    }
+    
   }
 
   useEffect(() => {
-    
+    console.log('rerendered', loadingFlag)
+
     if (account) {
       approveState.status === 'Exception' && toast.error('approve_error',{position: toast.POSITION.TOP_RIGHT, autoClose:5000});
       hardState.status === 'Exception' && toast.error('Lock_error',{position: toast.POSITION.TOP_RIGHT, autoClose:5000});
@@ -36,10 +52,6 @@ const Card = (props) => {
     }
   }, [account])
   
-  if (loadingFlag) {
-    return <Loading />
-  }
-
   return (
     <div className='lg:w-1/4 md:w-1/2 p-3 w-full  mb-10'>
       <div className=' rounded-md bg-[#1c1b1b] p-3 shadow-lg shadow-emerald-700/50'>
