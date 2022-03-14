@@ -39,11 +39,13 @@ const Home = () => {
   const nfts = async () => {
     console.log(account)
     console.log(ContractAddressByRinkeby)
-    const result = await Web3Api.account.getNFTsForContract({
-      chain: 'ropsten',
+    const options = {
+      chain: "ropsten",
       address: account,
       token_address: ContractAddressByRinkeby,
-    })
+    };
+    console.log("---moralis---->")
+    const result = await Web3Api.account.getNFTsForContract(options);
     console.log("result-->", result);
     return result
   }
@@ -96,6 +98,7 @@ const Home = () => {
   }
   const setNFTList = async () => {
     const nftList = await nfts()
+    console.log("nftList", nftList)
     let nsList = []
     setNftsList([]);
     for (let nft of nftList.result) {
@@ -132,6 +135,13 @@ const Home = () => {
   const withDraw = async () => {
     
     try{
+      if(amount === 0) {
+        toast.error('amount must not 0', {
+          position: toast.POSITION.TOP_RIGHT,
+          autoClose: 2000,
+        })
+        return;
+      }
       setLoadingFlag(true);
       setOpen(false)
       setAmount(0)
@@ -142,8 +152,9 @@ const Home = () => {
         autoClose: 2000,
       })
     }catch(e){
+      console.log("eeeeee", e);
       setLoadingFlag(false);
-      toast.error('error', {
+      toast.error('error_mmm', {
         position: toast.POSITION.TOP_RIGHT,
         autoClose: 2000,
       })
@@ -151,7 +162,10 @@ const Home = () => {
     }
 
   }
-
+  const closeWithDraw = () => {
+    setOpen(false);
+     setAmount(0);
+  }
   const getUserBalance = useGetUserBalance(account)
 
   useEffect(() => {
@@ -170,7 +184,7 @@ const Home = () => {
     <AppLayout className="">
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 flex flex-col items-center justify-center gap-y-10'>
         <div className='py-10 text-center w-full flex flex-wrap  items-center justify-between  gap-y-2 '>
-          <div className='basis-[100%]  md:basis-[48%] px-10  py-5 bg-gray-700 flex flex-col text-center gap-5 rounded-2xl  shadow-lg shadow-gray-700/50'>
+          <div className='bg-stakingBanner bg-[length:100%_100%]  basis-[100%]  md:basis-[48%] px-10  py-5  flex flex-col text-center gap-5 rounded-2xl  shadow-lg shadow-gray-700/50'>
             <span className='text-[30px] font-semibold text-white'>
               {account ? parseInt(totalStackedNFT, 10).toString() : ''}
             </span>
@@ -178,7 +192,7 @@ const Home = () => {
               Total Locked NFTs
             </span>
           </div>
-          <div className='basis-[100%] md:basis-[48%] px-10 py-5 bg-gray-700 flex flex-col text-center gap-5 rounded-2xl  shadow-lg shadow-gray-700/50'>
+          <div className='bg-stakingBanner bg-[length:100%_100%] basis-[100%] md:basis-[48%] px-10 py-5 flex flex-col text-center gap-5 rounded-2xl  shadow-lg shadow-gray-700/50'>
             <span className='text-[30px] font-semibold text-white'>
               {account ? parseInt(totalHardStakers, 10).toString() : ''}
             </span>
@@ -187,9 +201,9 @@ const Home = () => {
             </span>
           </div>
         </div>
-        <div className='bg-gray-700 py-5 text-center w-full rounded-2xl  shadow-lg shadow-gray-700/50'>
+        <div className='bg-amountBanner bg-[length:100%_100%]  py-5 text-center w-full rounded-2xl  shadow-lg shadow-gray-700/50'>
           <ul className=''>
-            <li className=' text-white text-[30px] font-bold mb-[20px] tracking-[0.05em]'>
+            <li className=' text-white text-[30px] font-bold mt-5 mb-[20px] tracking-[0.05em]'>
               Your Rewards
             </li>
             <li className='text-[20px] font-bold text-white mb-5'>
@@ -202,12 +216,12 @@ const Home = () => {
         </div>
         {nftsList && <CardList nfts={nftsList} />}
 
-        <div className='pt-10 pb-20 text-center w-full flex flex-wrap  items-center justify-between gap-y-10'>
+        <div className=' pt-10 pb-20 text-center w-full flex flex-wrap  items-center justify-between gap-y-10'>
           {/* <button className='basis-[100%] md:basis-[48%] text-lg font-bold rounded-2xl  text-white py-5   hover:text-white hover:text-xl bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 focus:outline-none focus:ring focus:ring-cyan-300 shadow-lg shadow-cyan-700/50'>
             STAKE
           </button> */}
           <button
-            className='w-full text-lg font-bold rounded-2xl   text-white py-5  hover:text-xl bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-300 shadow-lg shadow-indigo-700/50'
+            className='bg-withdrawBanner bg-[length:100%_100%] w-full text-lg font-bold rounded-2xl text-white py-5  hover:text-xl  focus:outline-none focus:ring focus:ring-indigo-300 shadow-lg shadow-indigo-700/50'
             onClick={() => (account ? setOpen(true) : '')}
           >
             WITHDRAW
@@ -289,7 +303,7 @@ const Home = () => {
                     <button
                       type='button'
                       className='mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
-                      onClick={() => setOpen(false) && setAmount(0)}
+                      onClick={closeWithDraw}
                       ref={cancelButtonRef}
                     >
                       Cancel

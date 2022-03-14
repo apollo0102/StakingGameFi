@@ -5,10 +5,13 @@ module.exports = {
   theme: {
     extend: {},
     fontFamily: {
-      'sans': ['"Bowlby One"', '"Sans-serif"'],
+      'sans': ['"Roboto"', '"Sans-serif"'],
     },
     backgroundImage: {
       'backImg': "url('assets/images/backImg.gif')",
+      'stakingBanner': "url('assets/images/2.png')",
+      'amountBanner': "url('assets/images/1.png')",
+      'withdrawBanner': "url('assets/images/3.png')",
     }
   },
   plugins: [],

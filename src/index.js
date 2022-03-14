@@ -11,7 +11,6 @@ ReactDOM.render(
     <MoralisProvider appId={REACT_APP_MORALIS_APPLICATION_ID} serverUrl={REACT_APP_SERVER_URL}>
       <App />
     </MoralisProvider>
-    ,
   </React.StrictMode>,
   document.getElementById('root'),
 )
