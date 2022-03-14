@@ -165,8 +165,8 @@ const Home = () => {
         })
       setNFTList()
     }
-  // }, [account, lockNFTList])
-  }, [account])
+  }, [account, lockNFTList])
+  // }, [account])
 
   if (loadingFlag) {
     return <Loading />
